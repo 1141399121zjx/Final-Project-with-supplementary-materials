@@ -1,0 +1,82 @@
+x=read.table("E:/R-3.5.0/Major Project - Data Set.csv",sep=",",header=T)
+par(mfrow = c(1,3))
+plot(x$AGE)
+plot(x$SIZE)
+plot(x$PRICE)
+
+library(pastecs)
+ne=cbind(x[,2:6],x$PRICE)
+de1 = stat.desc(ne)
+
+skew <- function(x)
+  {
+  n <- length(x) #长度
+  meanx <- mean(x) #均值
+  s <-sd(x) #均方差
+  u <- sum((x-meanx)^3 )/n #3阶中心矩
+  g1 <- (n^2*u)/((n-1)*(n-2)*s^3) #偏度
+  return(g1) #输出结果
+}
+
+sk_1=skew(x$AGE)
+sk_2=skew(x$CRIME)
+sk_3=skew(x$TOWN)
+sk_4=skew(x$STORIES)
+sk_5=skew(x$SIZE)
+sk_6=skew(x$PRICE)
+
+Skewness = c(sk_1,sk_2,sk_3,sk_4,sk_5,sk_6)
+
+kurt <- function(y)
+{
+  s<- sd(y) #均方差
+  n<- length(y)  #长度
+  uk4 <- sum((y-mean(y))^4)/n #4阶中心矩
+  g2 <- (n^2*(n+1)*uk4)/((n-1)*(n-2)*(n-3)*s^4)-((3*(n-1)^2)/((n-2)*(n-3))) #峰度
+  return(g2) #输出结果
+}
+
+ku_1=kurt(x$AGE)
+ku_2=kurt(x$CRIME)
+ku_3=kurt(x$TOWN)
+ku_4=kurt(x$STORIES)
+ku_5=kurt(x$SIZE)
+ku_6=kurt(x$PRICE)
+
+Kurtosis = c(ku_1,ku_2,ku_3,ku_4,ku_5,ku_6)
+
+library(reshape)
+de = rbind(de1,Skewness,Kurtosis)
+row.names(de)[15:16]=c("Skewness","Kurtosis")
+
+
+par(mfrow = c(1,3),pin = c(1,2))
+boxplot(x$AGE,xlab = "Box plot of AGE")
+boxplot(x$SIZE,xlab = "Box plot of SIZE")
+boxplot(x$PRICE,xlab = "Box plot of PRICE")
+
+
+co=data.frame(x$CRIME,x$TOWN,x$SUBURB)
+cor(co)
+
+lm5.6<-lm(x$PRICE~x$AGE+x$CRIME+x$STORIES+x$SIZE+x$OCEAN+x$POOL+x$SELLER+x$TENNIS+x$SOLD,data=x)
+lm5.6_step<-step(lm5.6,direction="both",trace=0)
+summary(lm5.6_step)
+
+x<-subset(x, AGE<=20)
+x<-subset(x, AGE>=10)
+x<-subset(x, PRICE<=1000000)
+x<-subset(x, PRICE>=200000)
+x<-subset(x, SIZE<=250)
+x<-subset(x, SIZE>=100)
+
+lm5.7<-lm(x$PRICE~x$AGE+x$CRIME+x$STORIES+x$SIZE+x$OCEAN+x$POOL+x$SELLER+x$TENNIS+x$SOLD,data=x)
+#lm5.7_step<-step(lm5.7,direction="both")
+summary(lm5.7)
+
+lm5.8<-lm(x$PRICE~x$AGE+x$CRIME+x$STORIES+x$SIZE+x$OCEAN+x$POOL+x$SELLER+x$TENNIS+x$SOLD,data=x)
+lm5.8_step<-step(lm5.8,direction="both",trace=0)
+summary(lm5.8_step)
+
+library(lmtest)
+gqtest(lm5.8_step)
